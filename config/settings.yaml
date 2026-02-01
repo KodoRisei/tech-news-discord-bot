@@ -71,14 +71,14 @@ ai:
   # プロバイダー選択: claude / chatgpt / gemini
   # 切り替えるときは下記のように変更してください。
   # --------- Claude（デフォルト）---------
-  provider: claude
-  model: "claude-sonnet-4-20250514"
+  # provider: claude
+  # model: "claude-sonnet-4-20250514"
   # --------- ChatGPT に切り替える場合 ---------
   # provider: chatgpt
   # model: "gpt-4o-mini"
   # --------- Gemini に切り替える場合 ---------
-  # provider: gemini
-  # model: "gemini-2.0-flash"
+  provider: gemini
+  model: "gemini-2.0-flash"
 
   max_tokens: 500
   # 要約プロンプトのテンプレート
