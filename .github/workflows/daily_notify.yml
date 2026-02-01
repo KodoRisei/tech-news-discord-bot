@@ -1,0 +1,61 @@
+name: Daily Tech News Discord Notification
+
+on:
+  schedule:
+    # 毎朝 7:00 AM JST (= 22:00 UTC the previous day)
+    - cron: '0 22 * * *'
+  # 手動トリガーも可能
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (Discord には送信しない)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      # ---------------------------------------------------------
+      # 1. リポジトリのチェックアウト
+      # ---------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------
+      # 2. Python環境のセットアップ
+      # ---------------------------------------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      # ---------------------------------------------------------
+      # 3. 依存関係のインストール
+      # ---------------------------------------------------------
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ---------------------------------------------------------
+      # 4. メインスクリプトの実行
+      # ---------------------------------------------------------
+      - name: Run daily notification bot
+        env:
+          # ---------- Discord ----------
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+          # ---------- AI プロバイダー ----------
+          # 使用するプロバイダーの Secret のみ設定すればOK
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY:    ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
+
+          # ---------- オプション ----------
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          python -m src.main
