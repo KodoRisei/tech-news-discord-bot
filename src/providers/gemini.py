@@ -15,8 +15,9 @@ from src.providers.base import BaseLLMProvider
 
 logger = logging.getLogger(__name__)
 
-_RETRY_MAX = 3
-_RETRY_DELAY_SEC = 2.0
+_RETRY_MAX = 5
+_RETRY_DELAY_BASE_SEC = 5.0   # 指数バックオフの基値
+_RETRY_DELAY_MAX_SEC = 30.0   # バックオフの上限
 
 
 class GeminiProvider(BaseLLMProvider):
@@ -52,8 +53,13 @@ class GeminiProvider(BaseLLMProvider):
                 # Gemini SDK は共通の RateLimitError を持たないため、
                 # メッセージで判定して再試行する
                 if "429" in str(exc) or "rate" in str(exc).lower():
-                    logger.warning(f"[Gemini] レートリミット (attempt {attempt}/{_RETRY_MAX})")
-                    time.sleep(_RETRY_DELAY_SEC * attempt)
+                    # 指数バックオフ: 5s → 10s → 20s → 30s → 30s
+                    wait = min(_RETRY_DELAY_BASE_SEC * (2 ** (attempt - 1)), _RETRY_DELAY_MAX_SEC)
+                    logger.warning(
+                        f"[Gemini] レートリミット (attempt {attempt}/{_RETRY_MAX}) "
+                        f"— {wait:.0f}s 待機中..."
+                    )
+                    time.sleep(wait)
                     continue
 
                 logger.error(f"[Gemini] API エラー: {exc}")

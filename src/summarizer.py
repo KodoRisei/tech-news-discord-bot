@@ -65,11 +65,20 @@ def summarize_all(articles: list[Article], ai_config: dict) -> list[Article]:
     provider = get_provider(ai_config)
     prompt_template = ai_config.get("summary_prompt", "")
 
-    logger.info(f"AI 要約を開始 ({len(articles)} 件)...")
+    # プロバイダー別の記事間隔 (秒)
+    # Gemini Free tier は約1分に2リクエスト制限なので長めに設定
+    _INTER_CALL_DELAY: dict[str, float] = {
+        "claude": 0.5,
+        "chatgpt": 0.5,
+        "gemini": 5.0,
+    }
+    provider_name = ai_config.get("provider", "claude").lower()
+    delay = _INTER_CALL_DELAY.get(provider_name, 1.0)
+
+    logger.info(f"AI 要約を開始 ({len(articles)} 件) | 記事間隔: {delay}s ...")
 
     for article in articles:
         article.summary = summarize_article(article, provider, prompt_template)
-        # レートリミットを回避するために短いスリープ
-        time.sleep(0.5)
+        time.sleep(delay)
 
     return articles

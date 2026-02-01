@@ -11,13 +11,13 @@ keywords:
   - AWS
   - Databricks
   - Python
-  - Kubernetes
-  - DevOps
-  - Machine Learning
+  # - Kubernetes
+  # - DevOps
+  # - Machine Learning
   - Data Engineering
   - Cloud Security
   - Terraform
-  - FastAPI
+  # - FastAPI
 
 # ---------------------------------------------------------
 # 収集ソース設定
@@ -27,7 +27,8 @@ sources:
   - id: aws_whatsnew
     name: "AWS What's New"
     type: rss
-    url: "https://aws.amazon.com/about-aws/whats-new/feed/"
+    # rss.aws サブドメインが正規の RSS エンドポイント
+    url: "https://rss.aws/whatsnew.rss"
     max_items: 30
 
   - id: aws_blog
@@ -40,13 +41,15 @@ sources:
   - id: databricks_blog
     name: "Databricks Engineering Blog"
     type: rss
-    url: "https://databricks.com/blog/feed"
+    # /blog/feed は HTML を返すため /blog/rss を使用
+    url: "https://databricks.com/blog/rss"
     max_items: 20
 
   - id: databricks_release_notes
     name: "Databricks Release Notes"
     type: rss
-    url: "https://docs.databricks.com/en/release-notes/index.rss"
+    # index.rss がリダイレクトで壊れるため Atom フェッドを使用
+    url: "https://docs.databricks.com/en/release-notes/index.atom"
     max_items: 20
 
   # --------- 技術ブログ ----------
@@ -57,9 +60,10 @@ sources:
     max_items: 40
 
   - id: medium_engineering
-    name: "Medium - Engineering"
+    name: "Medium - Towards Data Science"
     type: rss
-    url: "https://medium.com/feed/s/engineering"
+    # medium.com/feed/s/ は認証で壊れるため、公開 publication の RSS を使用
+    url: "https://medium.com/feed/towards-data-science"
     max_items: 30
 
 # ---------------------------------------------------------
