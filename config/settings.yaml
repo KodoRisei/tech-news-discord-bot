@@ -84,7 +84,7 @@ ai:
   # ⚠️ 注意: Gemini Free tier はレート制限あり。
   #    gemini-1.5-flash を推奨（models/ プレフィックスは自動付与）
   provider: gemini
-  model: "gemini-1.5-flash"  # または "gemini-1.5-pro"
+  model: "gemini-2.5-pro"  # または "gemini-1.5-pro"
 
   max_tokens: 500
   # 要約プロンプトのテンプレート
