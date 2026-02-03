@@ -16,15 +16,23 @@ on:
           - 'true'
           - 'false'
 
+# GitHub Actions の権限を明示的に設定
+permissions:
+  contents: read
+
 jobs:
   notify:
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # タイムアウトを設定
+    
     steps:
       # ---------------------------------------------------------
       # 1. リポジトリのチェックアウト
       # ---------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # ---------------------------------------------------------
       # 2. Python環境のセットアップ

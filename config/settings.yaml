@@ -81,8 +81,10 @@ ai:
   # provider: chatgpt
   # model: "gpt-4o-mini"
   # --------- Gemini に切り替える場合 ---------
+  # ⚠️ 注意: Gemini Free tier はレート制限あり。
+  #    gemini-1.5-flash を推奨（2.0より安定）
   provider: gemini
-  model: "gemini-2.5-pro"
+  model: "gemini-1.5-flash"
 
   max_tokens: 500
   # 要約プロンプトのテンプレート

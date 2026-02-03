@@ -26,7 +26,7 @@ class GeminiProvider(BaseLLMProvider):
     def __init__(self, ai_config: dict) -> None:
         super().__init__(ai_config)
         if not self.model:
-            self.model = "gemini-2.0-flash"
+            self.model = "gemini-1.5-flash"
 
         api_key = os.environ.get("GEMINI_API_KEY", "")
         if not api_key:

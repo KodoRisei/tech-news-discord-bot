@@ -40,27 +40,58 @@ def score_article(article: Article, keywords: list[str]) -> tuple[float, list[st
     記事のキーワード適合スコアを計算する
 
     スコア計算の重み:
-        - タイトル中のキーワード: ×3
-        - 説明文中のキーワード: ×1
+        1. キーワードマッチ:
+           - タイトル中のキーワード: ×3
+           - 説明文中のキーワード: ×1
+        2. 新鮮度ブースト（ホットな話題を優先）:
+           - 24時間以内: +5.0
+           - 1週間以内: +2.0
+           - 1ヶ月以内: +0.5
+        3. ソースの信頼性:
+           - 公式ソース（AWS, Databricks）: ×1.3
+           - 大手メディア（Medium, dev.to）: ×1.0
 
     Returns:
         (スコア, マッチしたキーワードのリスト)
     """
+    from datetime import datetime, timezone, timedelta
+
     title_hits = _count_keyword_hits(article.title, keywords)
     desc_hits = _count_keyword_hits(article.description, keywords)
 
-    score = 0.0
+    # ---- 1. キーワードマッチスコア ----
+    keyword_score = 0.0
     matched: set[str] = set()
 
     for kw, count in title_hits.items():
-        score += count * 3.0
+        keyword_score += count * 3.0
         matched.add(kw)
 
     for kw, count in desc_hits.items():
-        score += count * 1.0
+        keyword_score += count * 1.0
         matched.add(kw)
 
-    return score, sorted(matched)
+    # ---- 2. 新鮮度ブースト（ホットな話題）----
+    now = datetime.now(timezone.utc)
+    age = now - article.published
+    
+    if age < timedelta(hours=24):
+        recency_boost = 5.0  # 24時間以内の記事は大幅ブースト
+    elif age < timedelta(days=7):
+        recency_boost = 2.0  # 1週間以内
+    elif age < timedelta(days=30):
+        recency_boost = 0.5  # 1ヶ月以内
+    else:
+        recency_boost = 0.0
+
+    # ---- 3. ソースの信頼性重み ----
+    # 公式ソース（AWS, Databricks）は1.3倍、その他は1.0倍
+    source_weight = 1.3 if article.source_id.startswith(('aws_', 'databricks_')) else 1.0
+
+    # ---- 最終スコア ----
+    final_score = (keyword_score + recency_boost) * source_weight
+
+    return final_score, sorted(matched)
 
 
 def filter_articles(
@@ -87,7 +118,8 @@ def filter_articles(
             article.matched_keywords = matched_kws
             scored.append((score, article))
 
-    # スコアの降順でソート（同スコアの場合は新しい順）
+    # スコア降順でソート（同スコアの場合は新しい順）
+    # これによりホットな話題が最優先される
     scored.sort(key=lambda x: (x[0], x[1].published), reverse=True)
 
     selected = [article for _, article in scored[:max_articles]]
@@ -95,6 +127,8 @@ def filter_articles(
     logger.info(
         f"キーワードフィルタリング: {len(articles)} 件 → {len(selected)} 件に絞り込み"
     )
+    if selected:
+        logger.info(f"  トップ記事スコア: {scored[0][0]:.1f} | {selected[0].title[:60]}...")
     for art in selected:
         logger.debug(f"  [{art.source_name}] {art.title} | keywords={art.matched_keywords}")
 
