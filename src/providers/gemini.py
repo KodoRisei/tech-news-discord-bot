@@ -27,6 +27,10 @@ class GeminiProvider(BaseLLMProvider):
         super().__init__(ai_config)
         if not self.model:
             self.model = "gemini-1.5-flash"
+        
+        # google-genai SDK はモデル名に "models/" プレフィックスが必要
+        if not self.model.startswith("models/"):
+            self.model = f"models/{self.model}"
 
         api_key = os.environ.get("GEMINI_API_KEY", "")
         if not api_key:
@@ -50,10 +54,16 @@ class GeminiProvider(BaseLLMProvider):
                 return response.text.strip()
 
             except Exception as exc:
-                # Gemini SDK は共通の RateLimitError を持たないため、
-                # メッセージで判定して再試行する
-                if "429" in str(exc) or "rate" in str(exc).lower():
-                    # 指数バックオフ: 5s → 10s → 20s → 30s → 30s
+                error_str = str(exc)
+                
+                # 404エラー = モデル名が間違っている（リトライ不要）
+                if "404" in error_str:
+                    logger.error(f"[Gemini] モデルが見つかりません: {self.model}")
+                    logger.error(f"  エラー詳細: {exc}")
+                    return ""
+                
+                # 429エラー = レート制限（リトライ）
+                if "429" in error_str or "rate" in error_str.lower() or "quota" in error_str.lower():
                     wait = min(_RETRY_DELAY_BASE_SEC * (2 ** (attempt - 1)), _RETRY_DELAY_MAX_SEC)
                     logger.warning(
                         f"[Gemini] レートリミット (attempt {attempt}/{_RETRY_MAX}) "
@@ -62,6 +72,7 @@ class GeminiProvider(BaseLLMProvider):
                     time.sleep(wait)
                     continue
 
+                # その他のエラー
                 logger.error(f"[Gemini] API エラー: {exc}")
                 return ""
 

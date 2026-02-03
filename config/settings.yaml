@@ -82,9 +82,9 @@ ai:
   # model: "gpt-4o-mini"
   # --------- Gemini に切り替える場合 ---------
   # ⚠️ 注意: Gemini Free tier はレート制限あり。
-  #    gemini-1.5-flash を推奨（2.0より安定）
+  #    gemini-1.5-flash を推奨（models/ プレフィックスは自動付与）
   provider: gemini
-  model: "gemini-1.5-flash"
+  model: "gemini-1.5-flash"  # または "gemini-1.5-pro"
 
   max_tokens: 500
   # 要約プロンプトのテンプレート

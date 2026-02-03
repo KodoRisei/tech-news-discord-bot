@@ -78,11 +78,11 @@ ai:
 # --------- Gemini を使う場合 ---------
 # ai:
 #   provider: gemini
-#   model: "gemini-2.0-flash"
+#   model: "gemini-1.5-flash"
 ```
 
 > **💡 Gemini について:**  
-> Gemini Free tier を使う場合は `gemini-1.5-flash` を推奨します（`2.0-flash` よりレート制限が安定）。それでも429エラーが頻発する場合は、Claude または ChatGPT への切り替えを検討してください。
+> Gemini Free tier を使う場合は `gemini-1.5-flash` を推奨します。モデル名は `models/` プレフィックスなしで指定してください（自動で付与されます）。それでも429エラーが頻発する場合は、Claude または ChatGPT への切り替えを検討してください。
 
 ### 3. キーワードの設定
 
