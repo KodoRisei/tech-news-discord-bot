@@ -8,8 +8,7 @@ import logging
 import os
 import time
 
-from google.genai import Client as GenAIClient
-from google.genai import types as genai_types
+import google.generativeai as genai
 
 from src.providers.base import BaseLLMProvider
 
@@ -27,10 +26,6 @@ class GeminiProvider(BaseLLMProvider):
         super().__init__(ai_config)
         if not self.model:
             self.model = "gemini-1.5-flash"
-        
-        # google-genai SDK はモデル名に "models/" プレフィックスが必要
-        if not self.model.startswith("models/"):
-            self.model = f"models/{self.model}"
 
         api_key = os.environ.get("GEMINI_API_KEY", "")
         if not api_key:
@@ -38,18 +33,24 @@ class GeminiProvider(BaseLLMProvider):
                 "GEMINI_API_KEY が設定されていません。"
                 "GitHub Secrets または環境変数で設定してください。"
             )
-        self.client = GenAIClient(api_key=api_key)
+        
+        # google-generativeai SDK の設定
+        genai.configure(api_key=api_key)
+        self.model_instance = genai.GenerativeModel(self.model)
+        
         logger.info(f"[Gemini] プロバイダー初期化 | model={self.model}")
 
     def call(self, prompt: str) -> str:
         for attempt in range(1, _RETRY_MAX + 1):
             try:
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents=prompt,
-                    config=genai_types.GenerateContentConfig(
-                        max_output_tokens=self.max_tokens,
-                    ),
+                # GenerationConfig で max_output_tokens を設定
+                generation_config = genai.types.GenerationConfig(
+                    max_output_tokens=self.max_tokens,
+                )
+                
+                response = self.model_instance.generate_content(
+                    prompt,
+                    generation_config=generation_config,
                 )
                 return response.text.strip()
 
@@ -57,8 +58,12 @@ class GeminiProvider(BaseLLMProvider):
                 error_str = str(exc)
                 
                 # 404エラー = モデル名が間違っている（リトライ不要）
-                if "404" in error_str:
+                if "404" in error_str or "not found" in error_str.lower():
                     logger.error(f"[Gemini] モデルが見つかりません: {self.model}")
+                    logger.error(
+                        f"  利用可能なモデル: gemini-1.5-flash, gemini-1.5-pro, gemini-pro\n"
+                        f"  詳細: https://ai.google.dev/gemini-api/docs/models/gemini"
+                    )
                     logger.error(f"  エラー詳細: {exc}")
                     return ""
                 
