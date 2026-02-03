@@ -81,6 +81,9 @@ ai:
 #   model: "gemini-2.0-flash"
 ```
 
+> **⚠️ Gemini Free tier について:**  
+> Gemini の無料プランはバースト制限（瞬間的な連続呼び出し）が非常に厳しく、複数記事の要約処理には不向きです。実運用では Claude または ChatGPT を推奨します。Gemini を使う場合は有料プラン（Pay-as-you-go）への切り替えを検討してください。
+
 ### 3. キーワードの設定
 
 `config/settings.yaml` の `keywords` セクションで収集したいキーワードを編集してください。
@@ -180,11 +183,11 @@ GitHub Actions (cron: 毎朝7AM JST)
         │
         ▼
 ┌─────────────┐
-│  fetcher.py  │  ← RSS ソース（AWS / Databricks / dev.to ...）
+│  fetcher.py │  ← RSS ソース（AWS / Databricks / dev.to ...）
 └──────┬──────┘
        ▼
 ┌─────────────┐
-│  filter.py   │  ← キーワード検索・スコアリング
+│  filter.py  │  ← キーワード検索・スコアリング
 └──────┬──────┘
        ▼
 ┌───────────────┐
@@ -198,6 +201,6 @@ GitHub Actions (cron: 毎朝7AM JST)
        │
        ▼
 ┌─────────────┐
-│  notifier.py │  ← Discord Webhook で通知送信
+│ notifier.py │  ← Discord Webhook で通知送信
 └─────────────┘
 ```

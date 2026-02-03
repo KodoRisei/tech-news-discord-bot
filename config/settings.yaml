@@ -11,13 +11,13 @@ keywords:
   - AWS
   - Databricks
   - Python
-  # - Kubernetes
-  # - DevOps
-  # - Machine Learning
+  - Kubernetes
+  - DevOps
+  - Machine Learning
   - Data Engineering
   - Cloud Security
   - Terraform
-  # - FastAPI
+  - FastAPI
 
 # ---------------------------------------------------------
 # 収集ソース設定
@@ -27,8 +27,8 @@ sources:
   - id: aws_whatsnew
     name: "AWS What's New"
     type: rss
-    # rss.aws サブドメインが正規の RSS エンドポイント
-    url: "https://rss.aws/whatsnew.rss"
+    # 公式の What's New RSS フィード
+    url: "https://aws.amazon.com/new/feed/"
     max_items: 30
 
   - id: aws_blog
@@ -39,18 +39,18 @@ sources:
 
   # --------- Databricks ----------
   - id: databricks_blog
-    name: "Databricks Engineering Blog"
+    name: "Databricks Blog"
     type: rss
-    # /blog/feed は HTML を返すため /blog/rss を使用
-    url: "https://databricks.com/blog/rss"
+    # メインの Databricks ブログフィード
+    url: "https://www.databricks.com/feed"
     max_items: 20
 
-  - id: databricks_release_notes
-    name: "Databricks Release Notes"
-    type: rss
-    # index.rss がリダイレクトで壊れるため Atom フェッドを使用
-    url: "https://docs.databricks.com/en/release-notes/index.atom"
-    max_items: 20
+  # Databricks Release Notes は公開 RSS が安定していないためコメントアウト
+  # - id: databricks_release_notes
+  #   name: "Databricks Release Notes"
+  #   type: rss
+  #   url: "https://docs.databricks.com/en/release-notes/index.atom"
+  #   max_items: 20
 
   # --------- 技術ブログ ----------
   - id: dev_to
@@ -74,7 +74,7 @@ ai:
 
   # プロバイダー選択: claude / chatgpt / gemini
   # 切り替えるときは下記のように変更してください。
-  # --------- Claude（デフォルト）---------
+  # --------- Claude（デフォルト・推奨）---------
   # provider: claude
   # model: "claude-sonnet-4-20250514"
   # --------- ChatGPT に切り替える場合 ---------
@@ -82,7 +82,7 @@ ai:
   # model: "gpt-4o-mini"
   # --------- Gemini に切り替える場合 ---------
   provider: gemini
-  model: "gemini-2.0-flash"
+  model: "gemini-2.5-pro"
 
   max_tokens: 500
   # 要約プロンプトのテンプレート
